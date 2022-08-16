@@ -27,6 +27,7 @@ public:
 
     GrpcClient(std::string target_ip, int port, logger::LoggerPtr pb_qry_factory_log);
     GrpcClient::Response<GrpcClient::TxStatus> sendTx(const iroha::protocol::Transaction& tx);
+    GrpcClient::Response<GrpcClient::TxStatus> sendTxList(const iroha::protocol::TxList& tx_list);
     GrpcClient::Response<iroha::protocol::QueryResponse> sendQuery(const iroha::protocol::Query& query);
     GrpcClient::Response<iroha::protocol::ToriiResponse> getTxStatus(const std::string& tx_hash);
 };

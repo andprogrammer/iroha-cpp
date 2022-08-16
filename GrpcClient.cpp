@@ -34,6 +34,15 @@ GrpcClient::Response<GrpcClient::TxStatus> GrpcClient::sendTx(const iroha::proto
     return response;
 }
 
+GrpcClient::Response<GrpcClient::TxStatus> GrpcClient::sendTxList(const iroha::protocol::TxList& tx_list)
+{
+    GrpcClient::Response<GrpcClient::TxStatus> response;
+    response.status = command_client_.ListTorii(tx_list);
+    response.answer = TxStatus::OK;
+    return response;
+}
+
+
 GrpcClient::Response<iroha::protocol::ToriiResponse> GrpcClient::getTxStatus(const std::string& tx_hash)
 {
     GrpcClient::Response<iroha::protocol::ToriiResponse> response;

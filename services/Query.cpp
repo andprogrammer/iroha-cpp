@@ -12,11 +12,10 @@ Query::Query(const std::string& account_name,
              logger::LoggerManagerTreePtr response_handler_log_manager,
              logger::LoggerPtr pb_qry_factory_log,
              const iroha::keypair_t& keypair)
-    : Request(server_ip, server_port),
+    : Request(server_ip, server_port, std::move(pb_qry_factory_log)),
       creator_(account_name),
       counter_(query_counter),
       response_handler_log_manager_(std::move(response_handler_log_manager)),
-      pb_qry_factory_log_(std::move(pb_qry_factory_log)),
       keypair_(keypair)
 {}
 

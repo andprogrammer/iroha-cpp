@@ -3,7 +3,6 @@
 
 #include "LibsAndClassDeclarations.h"
 
-#include "logger/logger_fwd.hpp"
 #include "logger/logger_manager_fwd.hpp"
 #include "services/Request.hpp"
 #include "transaction.pb.h"
@@ -15,7 +14,6 @@ class Tx: public Request
 {
     std::string creator_;
     logger::LoggerManagerTreePtr response_handler_log_manager_;
-    logger::LoggerPtr pb_qry_factory_log_;
     iroha::keypair_t keypair_;
     iroha::protocol::Transaction pbtx;
 
@@ -30,8 +28,8 @@ public:
        logger::LoggerManagerTreePtr response_handler_log_manager,
        logger::LoggerPtr pb_qry_factory_log,
        const iroha::keypair_t& keypair,
-       uint64_t created_time,
-       uint32_t quorum);
+       uint64_t created_time = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count(),
+       uint32_t quorum = 1);
     void addCommand(const iroha::protocol::Command& command);
     Tx& createRole(const std::string& role_name, const std::set<std::string>& permissions);
     Tx& appendRole(const std::string& account_id, const std::string& role_name);
@@ -40,13 +38,14 @@ public:
     Tx& revokePermission(const std::string& account_id, const std::string& permission_name);
     Tx& addAssetQuantity(const std::string& account_id, const std::string& role_name);
     Tx& subtractAssetQuantity(const std::string& asset_id, const std::string& amount);
-    Tx& addPeer(const std::string& address, const std::string& pubkey);
+    Tx& addPeer(const std::string& address, const std::string& pubkey, const std::optional<std::string>& tls_certificate, bool syncing_peer);
     Tx& addSignatory(const std::string& account_id, const std::string& pubkey);
     //    Tx& addSignatory(const std::string& account_id, const std::string&& pubkey);  // alternative impl
     Tx& createAsset(const std::string& asset_name, const std::string& domain_id, uint32_t precision);
     //    Tx& createAccount(const std::string& account_id, const std::string& domain_id, const std::string&& pubkey);  // alternative impl
     Tx& createAccount(const std::string& account_id, const std::string& domain_id, const std::string& pubkey);
     Tx& setAccountDetail(const std::string& account_id, const std::string& key, const std::string& value);
+    Tx& compareAndSetAccountDetail(const std::string& account_id, const std::string& key, const std::string& value, const std::optional<std::string>& old_value, bool check_empty);
     Tx& createDomain(const std::string& domain_id, const std::string& user_default_role);
     Tx& removeSignatory(const std::string& account_id, const std::string& pubkey);
     //    Tx& removeSignatory(const std::string& account_id);   // alternative impl
@@ -56,10 +55,11 @@ public:
                       const std::string& asset_id,
                       const std::string& description,
                       const std::string& amount);
-
     Tx& signAndAddSignature();
-    bool send();
+    const std::string send();
+    const std::string getTransactionHash(iroha::protocol::Transaction& tx) const;
     void printTransactionHash(iroha::protocol::Transaction& tx) const;
+    iroha::protocol::Transaction getTx() const;
 
 private:
     void populateRoleMap();

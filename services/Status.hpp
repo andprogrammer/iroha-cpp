@@ -4,14 +4,12 @@
 #include "LibsAndClassDeclarations.h"
 
 #include <endpoint.pb.h>
-#include "logger/logger_fwd.hpp"
 #include "services/Request.hpp"
 
 
 class Status: public Request
 {
     std::string tx_hash;
-    logger::LoggerPtr pb_qry_factory_log_;
     const std::map<iroha::protocol::TxStatus, std::string>
     userMessageMap = {
         {iroha::protocol::TxStatus::STATELESS_VALIDATION_FAILED,
@@ -36,9 +34,9 @@ class Status: public Request
          "Transaction has collected all signatures."}};
 
 public:
-    Status(const std::string &server_ip,
+    Status(const std::string& server_ip,
            int server_port,
-           std::string tx_hash,
+           const std::string& tx_hash,
            logger::LoggerPtr pb_qry_factory_log);
     std::string getTxStatus();
     std::string getTxStatus(std::string server_ip, int server_port);

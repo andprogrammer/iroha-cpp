@@ -3,10 +3,12 @@ add_library(clientservices
     Tx.cpp
     Status.cpp
     Request.cpp
+    TxBatch.cpp
     Query.hpp
     Tx.hpp
     Status.hpp
     Request.hpp
+    TxBatch.hpp
     LibsAndClassDeclarations.h
     ClassDeclarations.h
 )

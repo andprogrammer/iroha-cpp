@@ -4,7 +4,7 @@
 #include "LibsAndClassDeclarations.h"
 #include "services/Request.hpp"
 
-#include "logger/logger_fwd.hpp"
+//#include "logger/logger_fwd.hpp"
 #include "logger/logger_manager_fwd.hpp"
 #include "crypto/keypair.hpp"
 #include "queries.pb.h"
@@ -16,7 +16,7 @@ class Query: public Request
     uint64_t counter_;
     uint64_t local_time_;
     logger::LoggerManagerTreePtr response_handler_log_manager_;
-    logger::LoggerPtr pb_qry_factory_log_;
+//    logger::LoggerPtr pb_qry_factory_log_;
     iroha::protocol::Query queryProto;
     iroha::keypair_t keypair_;
 

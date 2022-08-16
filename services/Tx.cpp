@@ -23,10 +23,9 @@ Tx::Tx(const std::string& creator_account,
        const iroha::keypair_t& keypair,
        uint64_t created_time,
        uint32_t quorum)
-    : Request(server_ip, server_port),
+    : Request(server_ip, server_port, std::move(pb_qry_factory_log)),
       creator_(creator_account),
       response_handler_log_manager_(std::move(response_handler_log_manager)),
-      pb_qry_factory_log_(std::move(pb_qry_factory_log)),
       keypair_(keypair)
 {
     auto pl = pbtx.mutable_payload()->mutable_reduced_payload();
@@ -41,142 +40,62 @@ Tx::Tx(const std::string& creator_account,
 void Tx::populateRoleMap()
 {
     boost::assign::insert(pb_role_map_)
-            // Can append role
             (iroha::protocol::RolePermission::can_append_role, can_append_role)
-            // Can create role
             (iroha::protocol::RolePermission::can_create_role, can_create_role)
-            // Can append role
             (iroha::protocol::RolePermission::can_detach_role, can_detach_role)
-            // Can add asset quantity
             (iroha::protocol::RolePermission::can_add_asset_qty, can_add_asset_qty)
-            // Can subtract asset quantity
-            (iroha::protocol::RolePermission::can_subtract_asset_qty,
-             can_subtract_asset_qty)
-            // Can add peer
+            (iroha::protocol::RolePermission::can_subtract_asset_qty, can_subtract_asset_qty)
             (iroha::protocol::RolePermission::can_add_peer, can_add_peer)
-            // Can add signatory
             (iroha::protocol::RolePermission::can_add_signatory, can_add_signatory)
-            // Can remove signatory
-            (iroha::protocol::RolePermission::can_remove_signatory,
-             can_remove_signatory)
-            // Can set quorum
+            (iroha::protocol::RolePermission::can_remove_signatory, can_remove_signatory)
             (iroha::protocol::RolePermission::can_set_quorum, can_set_quorum)
-            // Can create account
             (iroha::protocol::RolePermission::can_create_account, can_create_account)
-            // Can set detail
             (iroha::protocol::RolePermission::can_set_detail, can_set_detail)
-            // Can create asset
             (iroha::protocol::RolePermission::can_create_asset, can_create_asset)
-            // Can transfer
             (iroha::protocol::RolePermission::can_transfer, can_transfer)
-            // Can receive
             (iroha::protocol::RolePermission::can_receive, can_receive)
-            // Can create domain
             (iroha::protocol::RolePermission::can_create_domain, can_create_domain)
-            // Can read assets
             (iroha::protocol::RolePermission::can_read_assets, can_read_assets)
-            // Can get roles
             (iroha::protocol::RolePermission::can_get_roles, can_get_roles)
-            // Can get my account
             (iroha::protocol::RolePermission::can_get_my_account, can_get_my_account)
-            // Can get all accounts
-            (iroha::protocol::RolePermission::can_get_all_accounts,
-             can_get_all_accounts)
-            // Can get domain accounts
-            (iroha::protocol::RolePermission::can_get_domain_accounts,
-             can_get_domain_accounts)
-            // Can get my signatories
-            (iroha::protocol::RolePermission::can_get_my_signatories,
-             can_get_my_signatories)
-            // Can get all signatories
-            (iroha::protocol::RolePermission::can_get_all_signatories,
-             can_get_all_signatories)
-            // Can get my engine receipts.
-            (iroha::protocol::RolePermission::can_get_my_engine_receipts,
-             can_get_my_engine_receipts)
-            // Can get domain engine receipts.
-            (iroha::protocol::RolePermission::can_get_domain_engine_receipts,
-             can_get_domain_engine_receipts)
-            // Can get all engine receipts.
-            (iroha::protocol::RolePermission::can_get_all_engine_receipts,
-             can_get_all_engine_receipts)
-            // Can get domain signatories
-            (iroha::protocol::RolePermission::can_get_domain_signatories,
-             can_get_domain_signatories)
-            // Can get my account assets
+            (iroha::protocol::RolePermission::can_get_all_accounts, can_get_all_accounts)
+            (iroha::protocol::RolePermission::can_get_domain_accounts, can_get_domain_accounts)
+            (iroha::protocol::RolePermission::can_get_my_signatories, can_get_my_signatories)
+            (iroha::protocol::RolePermission::can_get_all_signatories, can_get_all_signatories)
+            (iroha::protocol::RolePermission::can_get_my_engine_receipts, can_get_my_engine_receipts)
+            (iroha::protocol::RolePermission::can_get_domain_engine_receipts, can_get_domain_engine_receipts)
+            (iroha::protocol::RolePermission::can_get_all_engine_receipts, can_get_all_engine_receipts)
+            (iroha::protocol::RolePermission::can_get_domain_signatories, can_get_domain_signatories)
             (iroha::protocol::RolePermission::can_get_my_acc_ast, can_get_my_acc_ast)
-            // Can get all account assets
             (iroha::protocol::RolePermission::can_get_all_acc_ast, can_get_all_acc_ast)
-            // Can get domain account assets
-            (iroha::protocol::RolePermission::can_get_domain_acc_ast,
-             can_get_domain_acc_ast)
-            // Can get my account detail
-            (iroha::protocol::RolePermission::can_get_my_acc_detail,
-             can_get_my_acc_detail)
-            // Can get all account detail
-            (iroha::protocol::RolePermission::can_get_all_acc_detail,
-             can_get_all_acc_detail)
-            // Can get domain account detail
-            (iroha::protocol::RolePermission::can_get_domain_acc_detail,
-             can_get_domain_acc_detail)
-            // Can get my account transactions
+            (iroha::protocol::RolePermission::can_get_domain_acc_ast, can_get_domain_acc_ast)
+            (iroha::protocol::RolePermission::can_get_my_acc_detail, can_get_my_acc_detail)
+            (iroha::protocol::RolePermission::can_get_all_acc_detail, can_get_all_acc_detail)
+            (iroha::protocol::RolePermission::can_get_domain_acc_detail, can_get_domain_acc_detail)
             (iroha::protocol::RolePermission::can_get_my_acc_txs, can_get_my_acc_txs)
-            // Can get all account transactions
             (iroha::protocol::RolePermission::can_get_all_acc_txs, can_get_all_acc_txs)
-            // Can get domain account transactions
-            (iroha::protocol::RolePermission::can_get_domain_acc_txs,
-             can_get_domain_acc_txs)
-            // Can get my account assets transactions
-            (iroha::protocol::RolePermission::can_get_my_acc_ast_txs,
-             can_get_my_acc_ast_txs)
-            // Can get all account asset transactions
-            (iroha::protocol::RolePermission::can_get_all_acc_ast_txs,
-             can_get_all_acc_ast_txs)
-            // Can get domain account asset transactions
-            (iroha::protocol::RolePermission::can_get_domain_acc_ast_txs,
-             can_get_domain_acc_ast_txs)
-            // Can get my transactions
+            (iroha::protocol::RolePermission::can_get_domain_acc_txs, can_get_domain_acc_txs)
+            (iroha::protocol::RolePermission::can_get_my_acc_ast_txs, can_get_my_acc_ast_txs)
+            (iroha::protocol::RolePermission::can_get_all_acc_ast_txs, can_get_all_acc_ast_txs)
+            (iroha::protocol::RolePermission::can_get_domain_acc_ast_txs, can_get_domain_acc_ast_txs)
             (iroha::protocol::RolePermission::can_get_my_txs, can_get_my_txs)
-            // Can get all transactions
             (iroha::protocol::RolePermission::can_get_all_txs, can_get_all_txs)
-
-            // Can grant set quorum
-            (iroha::protocol::RolePermission::can_grant_can_set_my_quorum,
-             can_grant + can_set_my_quorum)
-            // Can grant add signatory
-            (iroha::protocol::RolePermission::can_grant_can_add_my_signatory,
-             can_grant + can_add_my_signatory)
-            // Can grant remove signatory
-            (iroha::protocol::RolePermission::can_grant_can_remove_my_signatory,
-             can_grant + can_remove_my_signatory)
-            // Can grant can_transfer
-            (iroha::protocol::RolePermission::can_grant_can_transfer_my_assets,
-             can_grant + can_transfer_my_assets)
-            // Can write details to other accounts
-            (iroha::protocol::RolePermission::can_grant_can_set_my_account_detail,
-             can_grant + can_set_my_account_detail)
-
-            // Can get blocks
+            (iroha::protocol::RolePermission::can_grant_can_set_my_quorum, can_grant + can_set_my_quorum)
+            (iroha::protocol::RolePermission::can_grant_can_add_my_signatory, can_grant + can_add_my_signatory)
+            (iroha::protocol::RolePermission::can_grant_can_remove_my_signatory, can_grant + can_remove_my_signatory)
+            (iroha::protocol::RolePermission::can_grant_can_transfer_my_assets, can_grant + can_transfer_my_assets)
+            (iroha::protocol::RolePermission::can_grant_can_set_my_account_detail, can_grant + can_set_my_account_detail)
             (iroha::protocol::RolePermission::can_get_blocks, can_get_blocks);
 }
 
 void Tx::populateGrantMap()
 {
     boost::assign::insert(pb_grant_map_)
-            // Can add my signatory
-            (iroha::protocol::GrantablePermission::can_add_my_signatory,
-             can_add_signatory)
-            // Can remove my signatory
-            (iroha::protocol::GrantablePermission::can_remove_my_signatory,
-             can_remove_signatory)
-            // Can set my quorum
+            (iroha::protocol::GrantablePermission::can_add_my_signatory, can_add_signatory)
+            (iroha::protocol::GrantablePermission::can_remove_my_signatory, can_remove_signatory)
             (iroha::protocol::GrantablePermission::can_set_my_quorum, can_set_quorum)
-            // Can write details to other accounts
-            (iroha::protocol::GrantablePermission::can_set_my_account_detail,
-             can_set_detail)
-            // Can transfer my assets
-            (iroha::protocol::GrantablePermission::can_transfer_my_assets,
-             can_transfer);
+            (iroha::protocol::GrantablePermission::can_set_my_account_detail, can_set_detail)
+            (iroha::protocol::GrantablePermission::can_transfer_my_assets, can_transfer);
 }
 
 void Tx::addCommand(const iroha::protocol::Command& command)
@@ -285,7 +204,7 @@ Tx& Tx::subtractAssetQuantity(const std::string& asset_id, const std::string& am
     return *this;
 }
 
-Tx& Tx::addPeer(const std::string& address, const std::string& pubkey)
+Tx& Tx::addPeer(const std::string& address, const std::string& pubkey, const std::optional<std::string>& tls_certificate, bool syncing_peer)
 {
     iroha::protocol::AddPeer pb_add_peer;
     auto peer = pb_add_peer.mutable_peer();
@@ -293,6 +212,10 @@ Tx& Tx::addPeer(const std::string& address, const std::string& pubkey)
     iroha::protocol::Peer res;
     res.set_address(address);
     res.set_peer_key(iroha::hexstringToArray<iroha::pubkey_t::size()>(pubkey).value().to_hexstring());
+
+    if (tls_certificate.has_value())
+        res.set_tls_certificate(*std::move(tls_certificate));
+    res.set_syncing_peer(syncing_peer);
 
     peer->CopyFrom(res);
 
@@ -361,6 +284,23 @@ Tx& Tx::setAccountDetail(const std::string& account_id, const std::string& key, 
     cmdSetAccountDetail.set_allocated_set_account_detail(new iroha::protocol::SetAccountDetail(cmd));
 
     addCommand(cmdSetAccountDetail);
+    return *this;
+}
+
+Tx& Tx::compareAndSetAccountDetail(const std::string& account_id, const std::string& key, const std::string& value, const std::optional<std::string>& old_value, bool check_empty)
+{
+    iroha::protocol::CompareAndSetAccountDetail cmd;
+    cmd.set_account_id(account_id);
+    cmd.set_key(key);
+    cmd.set_value(value);
+    if (old_value.has_value())
+        cmd.set_old_value(*std::move(old_value));
+    cmd.set_check_empty(check_empty);
+
+    auto cmdCompareAndSetAccountDetail = iroha::protocol::Command();
+    cmdCompareAndSetAccountDetail.set_allocated_compare_and_set_account_detail(new iroha::protocol::CompareAndSetAccountDetail(cmd));
+
+    addCommand(cmdCompareAndSetAccountDetail);
     return *this;
 }
 
@@ -438,21 +378,28 @@ Tx& Tx::signAndAddSignature()
     auto proto_signature = pbtx.add_signatures();
     proto_signature->set_public_key(keypair_.pubkey.to_hexstring());
     proto_signature->set_signature(signature.to_hexstring());
-
     return *this;
 }
 
-bool Tx::send()
+const std::string Tx::send()
 {
     GrpcResponseHandler response_handler(response_handler_log_manager_);
     response_handler.handle(GrpcClient(getServerIp(), getServerPort(), pb_qry_factory_log_).sendTx(pbtx));
-    printTransactionHash(pbtx);
-    return true;
+    return getTransactionHash(pbtx);
+}
+
+const std::string Tx::getTransactionHash(iroha::protocol::Transaction& tx) const
+{
+    return iroha::hash(tx).to_hexstring();
 }
 
 void Tx::printTransactionHash(iroha::protocol::Transaction& tx) const
 {
-    const std::string tx_hash = iroha::hash(tx).to_hexstring();
     std::cout << "Transaction was accepted for processing." << std::endl;
-    std::cout << "Its hash is " << tx_hash << std::endl;
+    std::cout << "Its hash is " << getTransactionHash(tx) << std::endl;
+}
+
+iroha::protocol::Transaction Tx::getTx() const
+{
+    return pbtx;
 }

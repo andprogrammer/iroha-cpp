@@ -4,14 +4,12 @@
 #include "common/byteutils.hpp"
 
 
-Status::Status(
-        const std::string &server_ip,
-        int server_port,
-        std::string tx_hash,
-        logger::LoggerPtr pb_qry_factory_log)
-    : Request(server_ip, server_port),
-      tx_hash(tx_hash),
-      pb_qry_factory_log_(std::move(pb_qry_factory_log))
+Status::Status(const std::string& server_ip,
+               int server_port,
+               const std::string& tx_hash,
+               logger::LoggerPtr pb_qry_factory_log)
+    : Request(server_ip, server_port, std::move(pb_qry_factory_log)),
+      tx_hash(tx_hash)
 {}
 
 std::string Status::getTxStatus()
