@@ -1,5 +1,6 @@
 #include <boost/filesystem.hpp>
 #include <iostream>
+#include <cassert>
 
 #include "crypto/keys_manager_impl.hpp"
 #include "logger/logger_manager.hpp"
@@ -16,6 +17,8 @@ namespace fs = boost::filesystem;
 auto log_manager = std::make_shared<logger::LoggerManagerTree>(logger::LoggerConfig{logger::LogLevel::kInfo, logger::getDefaultLogPatterns()})->getChild("CLI");
 const auto response_handler_log_manager = log_manager->getChild("ResponseHandler");
 const auto pb_qry_factory_log = log_manager->getChild("PbQueryFactory")->getLogger();
+
+const auto TX_COLLECTED_SIG_STATUS = "Transaction has collected all signatures.";
 
 
 int verifyPath(const fs::path& path, const logger::LoggerPtr& logger)
@@ -37,7 +40,7 @@ int verifyKepair(const iroha::expected::Result<shared_model::crypto::Keypair, st
     if (auto e = iroha::expected::resultToOptionalError(keypair))
     {
         logger->error("Keypair error: {}.\n"
-                      "keypair path: '{}', name: {}.\n",
+                      "Keypair path: '{}', name: {}.\n",
                       e.value(),
                       path.string(),
                       account_name);
@@ -60,7 +63,6 @@ auto generateKeypair(const std::string& account_name,
     auto keypair = manager.loadKeys(boost::none);
 
     verifyKepair(keypair, logger, path, account_name);
-
     return iroha::keypair_t(iroha::pubkey_t::from_hexstring(keypair.assumeValue().publicKey()).assumeValue(),
                             iroha::privkey_t::from_string(toBinaryString(keypair.assumeValue().privateKey())).assumeValue());
 }
@@ -95,8 +97,30 @@ Tx generateTx(const std::string& account_name,
                   tx_hash,
                   pb_qry_factory_log);
     std::cout << "Tx status=" << status.getTxStatus() << std::endl;
-
     return tx;
+}
+
+
+int verifyTxStatus(const std::string& peer_ip,
+                   int torii_port,
+                   const std::string& tx_hash)
+{
+    Status status(peer_ip,
+                  torii_port,
+                  tx_hash,
+                  pb_qry_factory_log);
+    return status.getTxStatus().find(TX_COLLECTED_SIG_STATUS) != std::string::npos ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+
+int verifyTxStatuses(const std::string& peer_ip,
+                     int torii_port,
+                     const std::vector<std::string>& tx_hashes)
+{
+    for (const auto& hash: tx_hashes)
+        if (verifyTxStatus(peer_ip, torii_port, hash) != EXIT_SUCCESS)
+            return EXIT_FAILURE;
+    return EXIT_SUCCESS;
 }
 
 
@@ -120,8 +144,8 @@ int run()
 
     tx_batch.addTransaction(tx_a.getTx());
     tx_batch.addTransaction(tx_b.getTx());
-    tx_batch.send();
-
+    std::vector<std::string> tx_hashes = tx_batch.send();
+    assert(EXIT_SUCCESS == verifyTxStatuses(peer_ip, torii_port, tx_hashes));
     return 0;
 }
 

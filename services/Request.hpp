@@ -9,8 +9,8 @@
 class Request
 {
 protected:
-    std::string server_ip;
-    int server_port;
+    const std::string server_ip;
+    const int server_port;
     logger::LoggerPtr pb_qry_factory_log_;
 
 public:

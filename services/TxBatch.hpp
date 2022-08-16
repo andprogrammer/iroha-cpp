@@ -23,7 +23,7 @@ public:
             logger::LoggerManagerTreePtr response_handler_log_manager);
 
     void addTransaction(const iroha::protocol::Transaction& tx);
-    const std::string send();
+    const std::vector<std::string> send();
 };
 
 #endif

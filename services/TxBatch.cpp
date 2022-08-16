@@ -28,13 +28,17 @@ void TxBatch::addTransaction(const iroha::protocol::Transaction& tx)
     transactions_.push_back(tx);
 }
 
-const std::string TxBatch::send()
+const std::vector<std::string> TxBatch::send()
 {
     iroha::protocol::TxList tx_list;
-    for (const auto& tx : transactions_)
+    std::vector<std::string> txHashes;
+    for (const auto& tx: transactions_)
+    {
         *tx_list.add_transactions() = tx;
+        txHashes.push_back(iroha::hash(tx).to_hexstring());
+    }
 
     GrpcResponseHandler response_handler(response_handler_log_manager_);
     response_handler.handle(GrpcClient(getServerIp(), getServerPort(), pb_qry_factory_log_).sendTxList(tx_list));
-    return "200";
+    return txHashes;
 }
