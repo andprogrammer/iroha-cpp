@@ -4,13 +4,15 @@
 #include "LibsAndClassDeclarations.h"
 
 #include "logger/logger_manager_fwd.hpp"
-#include "services/Request.hpp"
 #include "transaction.pb.h"
 #include <boost/bimap.hpp>
 #include "crypto/keypair.hpp"
 
 
-class Tx: public Request
+namespace IROHA_CPP
+{
+
+class Tx
 {
     std::string creator_;
     logger::LoggerManagerTreePtr response_handler_log_manager_;
@@ -23,10 +25,6 @@ private:
 
 public:
     Tx(const std::string& creator_account,
-       const std::string& server_ip,
-       int server_port,
-       logger::LoggerManagerTreePtr response_handler_log_manager,
-       logger::LoggerPtr pb_qry_factory_log,
        const iroha::keypair_t& keypair,
        uint64_t created_time = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count(),
        uint32_t quorum = 1);
@@ -55,15 +53,13 @@ public:
                       const std::string& asset_id,
                       const std::string& description,
                       const std::string& amount);
-    Tx& signAndAddSignature();
-    const std::string send();
-    const std::string getTransactionHash(iroha::protocol::Transaction& tx) const;
-    void printTransactionHash(iroha::protocol::Transaction& tx) const;
-    iroha::protocol::Transaction getTx() const;
+    const iroha::protocol::Transaction signAndAddSignature();
 
 private:
     void populateRoleMap();
     void populateGrantMap();
 };
+
+}
 
 #endif

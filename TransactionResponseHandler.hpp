@@ -1,9 +1,13 @@
 #ifndef TRANSACTION_RESPONSE_HANDLER_HPP
 #define TRANSACTION_RESPONSE_HANDLER_HPP
 
-#include "GrpcClient.hpp"  // for GrpcClient::TxStatus (yuck!)
+#include "GrpcClient.hpp"
 
 #include "logger/logger_fwd.hpp"
+
+
+namespace IROHA_CPP
+{
 
 
 namespace spdlog
@@ -20,5 +24,7 @@ public:
     explicit TransactionResponseHandler(logger::LoggerPtr log);
     void handle(const GrpcClient::TxStatus status) const;
 };
+
+}
 
 #endif

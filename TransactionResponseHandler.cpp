@@ -2,6 +2,10 @@
 #include "logger/logger.hpp"
 
 
+namespace IROHA_CPP
+{
+
+
 void TransactionResponseHandler::handle(const GrpcClient::TxStatus status) const
 {
     switch (status)
@@ -9,14 +13,11 @@ void TransactionResponseHandler::handle(const GrpcClient::TxStatus status) const
     case GrpcClient::OK:
         log_->info("Transaction successfully sent");
         break;
-        /*
-      case GrpcClient::NOT_VALID:
-        log_->error("Transaction is not valid");
-        break;
-         */
     }
 }
 
 TransactionResponseHandler::TransactionResponseHandler(logger::LoggerPtr log)
     : log_(std::move(log))
 {}
+
+}

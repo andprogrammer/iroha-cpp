@@ -6,6 +6,10 @@
 using namespace grpc;
 
 
+namespace IROHA_CPP
+{
+
+
 GrpcResponseHandler::GrpcResponseHandler(logger::LoggerManagerTreePtr log_manager)
     : tx_handler_(log_manager->getChild("Transaction")->getLogger()),
       query_handler_(log_manager->getChild("Query")->getLogger()),
@@ -64,4 +68,6 @@ void GrpcResponseHandler::handleGrpcErrors(grpc::StatusCode code)
     {
         log_->error("Handler for grpc {} not implemented", code);
     }
+}
+
 }

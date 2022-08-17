@@ -11,6 +11,10 @@
 using namespace iroha::protocol;
 
 
+namespace IROHA_CPP
+{
+
+
 QueryResponseHandler::QueryResponseHandler(logger::LoggerPtr log): log_(std::move(log))
 {
     handler_map_[QueryResponse::ResponseCase::kErrorResponse] = &QueryResponseHandler::handleErrorResponse;
@@ -192,4 +196,6 @@ void QueryResponseHandler::handleTransactionsResponse(const iroha::protocol::Que
             log_->info(prefix.at(kDefault), cmd);
         });
     });
+}
+
 }

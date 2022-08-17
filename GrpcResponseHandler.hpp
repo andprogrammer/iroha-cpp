@@ -7,6 +7,10 @@
 #include "TransactionResponseHandler.hpp"
 
 
+namespace IROHA_CPP
+{
+
+
 namespace spdlog
 {
     class logger;
@@ -26,5 +30,7 @@ public:
     void handle(GrpcClient::Response<GrpcClient::TxStatus> response);
     void handle(GrpcClient::Response<iroha::protocol::QueryResponse> response);
 };
+
+}
 
 #endif

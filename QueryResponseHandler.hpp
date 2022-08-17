@@ -10,12 +10,10 @@
 #include "qry_responses.pb.h"
 
 
-/*
-  workaround for circle-ci compilation issue; see
-  http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#2148 and
-  https://stackoverflow.com/questions/18837857/cant-use-enum-class-as-unordered-map-key
-  for more details
-  */
+namespace IROHA_CPP
+{
+
+
 struct EnumTypeHash
 {
     template <typename T>
@@ -46,13 +44,13 @@ private:
     using QueryResponseCode = iroha::protocol::QueryResponse::ResponseCase;
     using ErrorResponseCode = iroha::protocol::ErrorResponse::Reason;
 
-    // Map  QueryResponse code -> Handle Method
     std::unordered_map<QueryResponseCode, Handler, EnumTypeHash> handler_map_;
-    // Map ErrorResponse code -> String to print
     std::unordered_map<ErrorResponseCode, std::string, EnumTypeHash>
     error_handler_map_;
 
     logger::LoggerPtr log_;
 };
+
+}
 
 #endif

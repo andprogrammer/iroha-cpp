@@ -8,6 +8,9 @@
 #include "torii/query_client.hpp"
 
 
+namespace IROHA_CPP
+{
+
 class GrpcClient
 {
     torii::CommandSyncClient command_client_;
@@ -22,14 +25,15 @@ public:
         T answer;
     };
 
-    // TODO 13/09/17 luckychess: check if we need more status codes IR-494
     enum TxStatus { OK };
 
     GrpcClient(std::string target_ip, int port, logger::LoggerPtr pb_qry_factory_log);
-    GrpcClient::Response<GrpcClient::TxStatus> sendTx(const iroha::protocol::Transaction& tx);
-    GrpcClient::Response<GrpcClient::TxStatus> sendTxList(const iroha::protocol::TxList& tx_list);
-    GrpcClient::Response<iroha::protocol::QueryResponse> sendQuery(const iroha::protocol::Query& query);
+    GrpcClient::Response<GrpcClient::TxStatus> send(const iroha::protocol::Transaction& tx);
+    GrpcClient::Response<GrpcClient::TxStatus> send(const iroha::protocol::TxList& tx_list);
+    GrpcClient::Response<iroha::protocol::QueryResponse> send(const iroha::protocol::Query& query);
     GrpcClient::Response<iroha::protocol::ToriiResponse> getTxStatus(const std::string& tx_hash);
 };
+
+}
 
 #endif

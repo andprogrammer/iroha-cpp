@@ -11,21 +11,19 @@
 #include "cryptography/ed25519_sha3_impl/internal/ed25519_impl.hpp"
 #include <boost/assign/list_inserter.hpp>
 
+
 using namespace iroha::model;
 using namespace shared_model::permissions;
 
 
+namespace IROHA_CPP
+{
+
 Tx::Tx(const std::string& creator_account,
-       const std::string& server_ip,
-       int server_port,
-       logger::LoggerManagerTreePtr response_handler_log_manager,
-       logger::LoggerPtr pb_qry_factory_log,
        const iroha::keypair_t& keypair,
        uint64_t created_time,
        uint32_t quorum)
-    : Request(server_ip, server_port, std::move(pb_qry_factory_log)),
-      creator_(creator_account),
-      response_handler_log_manager_(std::move(response_handler_log_manager)),
+    : creator_(creator_account),
       keypair_(keypair)
 {
     auto pl = pbtx.mutable_payload()->mutable_reduced_payload();
@@ -112,7 +110,8 @@ Tx& Tx::createRole(const std::string& role_name, const std::set<std::string>& pe
     cmd.set_role_name(role_name);
     std::for_each(permissions.begin(),
                   permissions.end(),
-                  [&cmd, this](auto perm) {
+                  [&cmd, this](auto perm)
+    {
         auto perm_name = this->pb_role_map_.right.at(perm); // TODO sprawdzic czy ok
         cmd.add_permissions(perm_name);
     });
@@ -369,7 +368,7 @@ Tx& Tx::transferAsset(const std::string& account_id,
     return *this;
 }
 
-Tx& Tx::signAndAddSignature()
+const iroha::protocol::Transaction Tx::signAndAddSignature()
 {
     auto signature = iroha::sign(iroha::hash(pbtx).to_string(),
                                  keypair_.pubkey,
@@ -378,28 +377,7 @@ Tx& Tx::signAndAddSignature()
     auto proto_signature = pbtx.add_signatures();
     proto_signature->set_public_key(keypair_.pubkey.to_hexstring());
     proto_signature->set_signature(signature.to_hexstring());
-    return *this;
-}
-
-const std::string Tx::send()
-{
-    GrpcResponseHandler response_handler(response_handler_log_manager_);
-    response_handler.handle(GrpcClient(getServerIp(), getServerPort(), pb_qry_factory_log_).sendTx(pbtx));
-    return getTransactionHash(pbtx);
-}
-
-const std::string Tx::getTransactionHash(iroha::protocol::Transaction& tx) const
-{
-    return iroha::hash(tx).to_hexstring();
-}
-
-void Tx::printTransactionHash(iroha::protocol::Transaction& tx) const
-{
-    std::cout << "Transaction was accepted for processing." << std::endl;
-    std::cout << "Its hash is " << getTransactionHash(tx) << std::endl;
-}
-
-iroha::protocol::Transaction Tx::getTx() const
-{
     return pbtx;
+}
+
 }

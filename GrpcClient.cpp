@@ -9,6 +9,10 @@
 #include "network/impl/channel_factory.hpp"
 
 
+namespace IROHA_CPP
+{
+
+
 template <typename Service>
 std::unique_ptr<typename Service::StubInterface> makeStub(const std::string& target_ip, int port)
 {
@@ -24,17 +28,15 @@ GrpcClient::GrpcClient(std::string target_ip,
       pb_qry_factory_log_(std::move(pb_qry_factory_log))
 {}
 
-GrpcClient::Response<GrpcClient::TxStatus> GrpcClient::sendTx(const iroha::protocol::Transaction& tx)
+GrpcClient::Response<GrpcClient::TxStatus> GrpcClient::send(const iroha::protocol::Transaction& tx)
 {
     GrpcClient::Response<GrpcClient::TxStatus> response;
-    // Send to iroha:
     response.status = command_client_.Torii(tx);
-    // TODO 12/10/2017 neewy implement return of real transaction status IR-494
     response.answer = TxStatus::OK;
     return response;
 }
 
-GrpcClient::Response<GrpcClient::TxStatus> GrpcClient::sendTxList(const iroha::protocol::TxList& tx_list)
+GrpcClient::Response<GrpcClient::TxStatus> GrpcClient::send(const iroha::protocol::TxList& tx_list)
 {
     GrpcClient::Response<GrpcClient::TxStatus> response;
     response.status = command_client_.ListTorii(tx_list);
@@ -42,11 +44,19 @@ GrpcClient::Response<GrpcClient::TxStatus> GrpcClient::sendTxList(const iroha::p
     return response;
 }
 
+GrpcClient::Response<iroha::protocol::QueryResponse> GrpcClient::send(const iroha::protocol::Query& query)
+{
+    GrpcClient::Response<iroha::protocol::QueryResponse> response;
+    iroha::model::converters::PbQueryFactory pb_factory(pb_qry_factory_log_);
+    iroha::protocol::QueryResponse query_response;
+    response.status = query_client_.Find(query, query_response);    // TODO check
+    response.answer = query_response;
+    return response;
+}
 
 GrpcClient::Response<iroha::protocol::ToriiResponse> GrpcClient::getTxStatus(const std::string& tx_hash)
 {
     GrpcClient::Response<iroha::protocol::ToriiResponse> response;
-    // Send to iroha:
     iroha::protocol::TxStatusRequest statusRequest;
     statusRequest.set_tx_hash(tx_hash);
     iroha::protocol::ToriiResponse toriiResponse;
@@ -55,12 +65,4 @@ GrpcClient::Response<iroha::protocol::ToriiResponse> GrpcClient::getTxStatus(con
     return response;
 }
 
-GrpcClient::Response<iroha::protocol::QueryResponse> GrpcClient::sendQuery(const iroha::protocol::Query& query)
-{
-    GrpcClient::Response<iroha::protocol::QueryResponse> response;
-    iroha::model::converters::PbQueryFactory pb_factory(pb_qry_factory_log_);
-    iroha::protocol::QueryResponse query_response;
-    response.status = query_client_.Find(query, query_response);    // raczej ok
-    response.answer = query_response;
-    return response;
 }

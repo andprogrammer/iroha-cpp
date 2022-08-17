@@ -5,17 +5,12 @@
 #include "model/converters/pb_common.hpp"
 
 
-Query::Query(const std::string& account_name,
-             const std::string& server_ip,
-             int server_port,
-             uint64_t query_counter,
-             logger::LoggerManagerTreePtr response_handler_log_manager,
-             logger::LoggerPtr pb_qry_factory_log,
-             const iroha::keypair_t& keypair)
-    : Request(server_ip, server_port, std::move(pb_qry_factory_log)),
-      creator_(account_name),
+namespace IROHA_CPP
+{
+
+Query::Query(const std::string& account_name, uint64_t query_counter, const iroha::keypair_t& keypair)
+    : creator_(account_name),
       counter_(query_counter),
-      response_handler_log_manager_(std::move(response_handler_log_manager)),
       keypair_(keypair)
 {}
 
@@ -158,7 +153,7 @@ Query& Query::getRolePermissions(const std::string& role_id)
     return *this;
 }
 
-Query& Query::signAndAddSignature()
+iroha::protocol::Query& Query::signAndAddSignature()
 {
     auto signature = iroha::sign(iroha::hash(queryProto).to_string(),
                                  keypair_.pubkey,
@@ -167,18 +162,19 @@ Query& Query::signAndAddSignature()
     auto sig = queryProto.mutable_signature();
     sig->set_signature(signature.to_hexstring());
     sig->set_public_key(keypair_.pubkey.to_hexstring());
-
-    return *this;
+    return queryProto;
 }
 
-bool Query::send()
-{
-    GrpcClient client(getServerIp(), getServerPort(), pb_qry_factory_log_);
-    GrpcResponseHandler{response_handler_log_manager_}.handle(client.sendQuery(queryProto));
+//bool Query::send()
+//{
+//    GrpcClient client(getServerIp(), getServerPort(), pb_qry_factory_log_);
+//    GrpcResponseHandler{response_handler_log_manager_}.handle(client.sendQuery(queryProto));
 
-    // alternative implementation
-    //    GrpcResponseHandler response_handler(response_handler_log_manager_);
-    //    response_handler.handle(GrpcClient(getServerIp(), getServerPort(), pb_qry_factory_log_).sendQuery(queryProto));
+//    // alternative implementation
+//    //    GrpcResponseHandler response_handler(response_handler_log_manager_);
+//    //    response_handler.handle(GrpcClient(getServerIp(), getServerPort(), pb_qry_factory_log_).sendQuery(queryProto));
 
-    return true;
+//    return true;
+//}
+
 }

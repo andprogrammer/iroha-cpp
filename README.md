@@ -15,30 +15,7 @@ mkdir build && cd build && cmake .. && make
 
 ### Usage Example
 
-#### Transaction
-
-```c++
-    Tx tx(account_name,
-          peer_ip,
-          torii_port,
-          response_handler_log_manager,
-          pb_qry_factory_log,
-          *makeOldModel(keypair.assumeValue()),
-          chr::duration_cast<chr::milliseconds>(chr::system_clock::now().time_since_epoch()).count(),
-          1);
-
-    const auto domain_id = "domainsamplev1";
-    const auto user_default_role = "user";
-    const auto asset_name = "assetnamesamplev1";
-    std::cout << "Tx hash=" <<
-                 tx.createDomain(domain_id, user_default_role)
-                 .createAsset(asset_name, domain_id, 0)
-                 .signAndAddSignature()
-                 .send()
-              << std::endl;
-```
-
-#### Transaction Batch
+### Configuration
 ```c++
     auto account_name = "admin@test";
     const auto key_path = "/home/laptop/qt-workspace/iroha/example";
@@ -47,16 +24,49 @@ mkdir build && cd build && cmake .. && make
     const auto quorum = 1;
 
     const auto user_default_role = "user";
+```
 
-    const auto tx_a = generateTx(account_name, key_path, peer_ip, torii_port, quorum, "domainsamplev4", user_default_role, "assetnamesamplev4");
-    const auto tx_b = generateTx(account_name, key_path, peer_ip, torii_port, quorum, "domainsamplev5", user_default_role, "assetnamesamplev5");
+#### Transaction
 
-    TxBatch tx_batch(peer_ip,
-                     torii_port,
-                     pb_qry_factory_log,
-                     response_handler_log_manager);
+```c++
+    IROHA_CPP::Tx tx(account_name, keypair);
 
-    tx_batch.addTransaction(tx_a.getTx());
-    tx_batch.addTransaction(tx_b.getTx());
-    tx_batch.send();
+    const auto tx_proto = tx.createDomain(domain_id, user_default_role)
+            .createAsset(asset_name, domain_id, 0)
+            .signAndAddSignature();
+
+    GrpcResponseHandler response_handler(response_handler_log_manager);
+    response_handler.handle(GrpcClient(peer_ip, torii_port, pb_qry_factory_log).sendTx(tx_proto));
+
+    IROHA_CPP::Status status(tx_hash, pb_qry_factory_log);
+    const auto statusResponse = status.getTxStatus(peer_ip, torii_port);
+    std::cout << "Tx status=" << statusResponse << std::endl;
+```
+
+#### Transaction Batch
+```c++
+    IROHA_CPP::Tx tx_a(account_name, keypair);
+
+    const auto tx_proto = tx_a.createDomain(domain_id, user_default_role)
+            .createAsset(asset_name, domain_id, 0)
+            .signAndAddSignature();
+
+    GrpcResponseHandler response_handler(response_handler_log_manager);
+    response_handler.handle(GrpcClient(peer_ip, torii_port, pb_qry_factory_log).sendTx(tx_proto));
+
+    IROHA_CPP::Tx tx_b(account_name, keypair);
+
+    const auto tx_proto = tx_b.createDomain(domain_id, user_default_role)
+            .createAsset(asset_name, domain_id, 0)
+            .signAndAddSignature();
+
+    GrpcResponseHandler response_handler(response_handler_log_manager);
+    response_handler.handle(GrpcClient(peer_ip, torii_port, pb_qry_factory_log).sendTx(tx_proto));
+
+    IROHA_CPP::TxBatch tx_batch;
+    tx_batch.addTransaction(tx_a);
+    tx_batch.addTransaction(tx_b);
+
+    GrpcResponseHandler response_handler(response_handler_log_manager);
+    response_handler.handle(GrpcClient(peer_ip, torii_port, pb_qry_factory_log).sendTxList(tx_batch.getTxList()));
 ```
