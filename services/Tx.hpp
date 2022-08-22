@@ -15,7 +15,6 @@ namespace IROHA_CPP
 class Tx
 {
     std::string creator_;
-    logger::LoggerManagerTreePtr response_handler_log_manager_;
     iroha::keypair_t keypair_;
     iroha::protocol::Transaction pbtx;
 

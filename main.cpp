@@ -105,19 +105,21 @@ iroha::protocol::Transaction generateTransaction(const std::string& account_name
             .createAsset(asset_name, domain_id, 0)
             .signAndAddSignature();
 
-    const std::string tx_hash = getTransactionHash(tx_proto);
+    const auto tx_hash = getTransactionHash(tx_proto);
     std::cout << "Tx hash=" << tx_hash << std::endl;
+
     return tx_proto;
 }
 
 
 iroha::protocol::Transaction sendSampleTransaction(const std::string& account_name, const std::string& key_path, const std::string& peer_ip, int torii_port, uint32_t quorum, const std::string& domain_id, const std::string& user_default_role, const std::string& asset_name)
 {
-    const auto tx = generateTransaction(account_name, key_path, peer_ip, torii_port, quorum, domain_id, user_default_role, asset_name);
+    const auto tx_proto = generateTransaction(account_name, key_path, peer_ip, torii_port, quorum, domain_id, user_default_role, asset_name);
     IROHA_CPP::GrpcResponseHandler response_handler(response_handler_log_manager);
-    response_handler.handle(IROHA_CPP::GrpcClient(peer_ip, torii_port, pb_qry_factory_log).send(tx));
-    assert(EXIT_SUCCESS == verifyTransactionStatus(peer_ip, torii_port, getTransactionHash(tx)));
-    return tx;
+    response_handler.handle(IROHA_CPP::GrpcClient(peer_ip, torii_port, pb_qry_factory_log).send(tx_proto));
+    const auto tx_hash = getTransactionHash(tx_proto);
+    std::cout << "Tx hash=" << tx_hash << std::endl;
+    return tx_proto;
 }
 
 
@@ -142,8 +144,8 @@ void sendBatchTransaction(const std::string& peer_ip, int torii_port, const IROH
 
 int sendSampleBatchTransaction(const std::string& account_name, const std::string& key_path, const std::string& peer_ip, int torii_port, uint32_t quorum, const std::string& user_default_role)
 {
-    const auto tx_a = sendSampleTransaction(account_name, key_path, peer_ip, torii_port, quorum, "domainsamplev4", user_default_role, "assetnamesamplev4");
-    const auto tx_b = sendSampleTransaction(account_name, key_path, peer_ip, torii_port, quorum, "domainsamplev5", user_default_role, "assetnamesamplev5");
+    const auto tx_a = generateTransaction(account_name, key_path, peer_ip, torii_port, quorum, "domainsamplev2", user_default_role, "assetnamesamplev2");
+    const auto tx_b = generateTransaction(account_name, key_path, peer_ip, torii_port, quorum, "domainsamplev3", user_default_role, "assetnamesamplev3");
 
     IROHA_CPP::TxBatch tx_batch;
     tx_batch.addTransaction(tx_a);
