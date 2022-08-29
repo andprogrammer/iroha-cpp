@@ -37,15 +37,12 @@ public:
     Tx& subtractAssetQuantity(const std::string& asset_id, const std::string& amount);
     Tx& addPeer(const std::string& address, const std::string& pubkey, const std::optional<std::string>& tls_certificate, bool syncing_peer);
     Tx& addSignatory(const std::string& account_id, const std::string& pubkey);
-    //    Tx& addSignatory(const std::string& account_id, const std::string&& pubkey);  // alternative impl
     Tx& createAsset(const std::string& asset_name, const std::string& domain_id, uint32_t precision);
-    //    Tx& createAccount(const std::string& account_id, const std::string& domain_id, const std::string&& pubkey);  // alternative impl
     Tx& createAccount(const std::string& account_id, const std::string& domain_id, const std::string& pubkey);
     Tx& setAccountDetail(const std::string& account_id, const std::string& key, const std::string& value);
     Tx& compareAndSetAccountDetail(const std::string& account_id, const std::string& key, const std::string& value, const std::optional<std::string>& old_value, bool check_empty);
     Tx& createDomain(const std::string& domain_id, const std::string& user_default_role);
     Tx& removeSignatory(const std::string& account_id, const std::string& pubkey);
-    //    Tx& removeSignatory(const std::string& account_id);   // alternative impl
     Tx& setAccountQuorum(const std::string& account_id, uint32_t quorum);
     Tx& transferAsset(const std::string& account_id,
                       const std::string& dest_account_id,

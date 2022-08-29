@@ -20,8 +20,6 @@ auto log_manager = std::make_shared<logger::LoggerManagerTree>(logger::LoggerCon
 const auto response_handler_log_manager = log_manager->getChild("ResponseHandler");
 const auto pb_qry_factory_log = log_manager->getChild("PbQueryFactory")->getLogger();
 
-const auto TX_COLLECTED_SIG_STATUS = "Transaction has collected all signatures.";
-
 
 int verifyPath(const fs::path& path, const logger::LoggerPtr& logger)
 {
@@ -77,14 +75,16 @@ const std::string getTransactionHash(const iroha::protocol::Transaction& tx)
 }
 
 
-int verifyTransactionStatus(const std::string& peer_ip,
+void printTransactionStatus(const std::string& peer_ip,
                             int torii_port,
                             const std::string& tx_hash)
 {
     IROHA_CPP::Status status(tx_hash, pb_qry_factory_log);
     const auto statusResponse = status.getTxStatus(peer_ip, torii_port);
-    std::cout << "Tx status=" << statusResponse << std::endl;
-    return statusResponse.find(TX_COLLECTED_SIG_STATUS) != std::string::npos ? EXIT_SUCCESS : EXIT_FAILURE;
+    std::cout << "Status name=" << statusResponse.status_name
+              << "  Status code=" << statusResponse.status_code
+              << "  Error code=" << statusResponse.error_code
+              << std::endl;
 }
 
 
@@ -112,9 +112,22 @@ iroha::protocol::Transaction generateTransaction(const std::string& account_name
 }
 
 
-iroha::protocol::Transaction sendSampleTransaction(const std::string& account_name, const std::string& key_path, const std::string& peer_ip, int torii_port, uint32_t quorum, const std::string& domain_id, const std::string& user_default_role, const std::string& asset_name)
+iroha::protocol::Transaction sendSampleTransaction(const std::string& account_name,
+                                                   const std::string& key_path,
+                                                   const std::string& peer_ip,
+                                                   int torii_port, uint32_t quorum,
+                                                   const std::string& domain_id,
+                                                   const std::string& user_default_role,
+                                                   const std::string& asset_name)
 {
-    const auto tx_proto = generateTransaction(account_name, key_path, peer_ip, torii_port, quorum, domain_id, user_default_role, asset_name);
+    const auto tx_proto = generateTransaction(account_name,
+                                              key_path,
+                                              peer_ip,
+                                              torii_port,
+                                              quorum,
+                                              domain_id,
+                                              user_default_role,
+                                              asset_name);
     IROHA_CPP::GrpcResponseHandler response_handler(response_handler_log_manager);
     response_handler.handle(IROHA_CPP::GrpcClient(peer_ip, torii_port, pb_qry_factory_log).send(tx_proto));
     const auto tx_hash = getTransactionHash(tx_proto);
@@ -123,14 +136,12 @@ iroha::protocol::Transaction sendSampleTransaction(const std::string& account_na
 }
 
 
-int verifyTransactionStatuses(const std::string& peer_ip,
+void printTransactionStatuses(const std::string& peer_ip,
                               int torii_port,
                               const std::vector<std::string>& tx_hashes)
 {
     for (const auto& hash: tx_hashes)
-        if (verifyTransactionStatus(peer_ip, torii_port, hash) != EXIT_SUCCESS)
-            return EXIT_FAILURE;
-    return EXIT_SUCCESS;
+        printTransactionStatus(peer_ip, torii_port, hash);
 }
 
 
@@ -138,14 +149,33 @@ void sendBatchTransaction(const std::string& peer_ip, int torii_port, const IROH
 {
     IROHA_CPP::GrpcResponseHandler response_handler(response_handler_log_manager);
     response_handler.handle(IROHA_CPP::GrpcClient(peer_ip, torii_port, pb_qry_factory_log).send(tx_batch.getTxList()));
-    assert(EXIT_SUCCESS == verifyTransactionStatuses(peer_ip, torii_port, tx_batch.getTxHashes()));
+    printTransactionStatuses(peer_ip, torii_port, tx_batch.getTxHashes());
 }
 
 
-int sendSampleBatchTransaction(const std::string& account_name, const std::string& key_path, const std::string& peer_ip, int torii_port, uint32_t quorum, const std::string& user_default_role)
+int sendSampleBatchTransaction(const std::string& account_name,
+                               const std::string& key_path,
+                               const std::string& peer_ip,
+                               int torii_port,
+                               uint32_t quorum,
+                               const std::string& user_default_role)
 {
-    const auto tx_a = generateTransaction(account_name, key_path, peer_ip, torii_port, quorum, "domainsamplev2", user_default_role, "assetnamesamplev2");
-    const auto tx_b = generateTransaction(account_name, key_path, peer_ip, torii_port, quorum, "domainsamplev3", user_default_role, "assetnamesamplev3");
+    const auto tx_a = generateTransaction(account_name,
+                                          key_path,
+                                          peer_ip,
+                                          torii_port,
+                                          quorum,
+                                          "domainsamplev2",
+                                          user_default_role,
+                                          "assetnamesamplev2");
+    const auto tx_b = generateTransaction(account_name,
+                                          key_path,
+                                          peer_ip,
+                                          torii_port,
+                                          quorum,
+                                          "domainsamplev3",
+                                          user_default_role,
+                                          "assetnamesamplev3");
 
     IROHA_CPP::TxBatch tx_batch;
     tx_batch.addTransaction(tx_a);
@@ -164,8 +194,20 @@ int run()
     const auto quorum = 1;
     const auto user_default_role = "user";
 
-    sendSampleTransaction(account_name, key_path, peer_ip, torii_port, quorum, "domainsamplev1", user_default_role, "assetnamesamplev1");
-    sendSampleBatchTransaction(account_name, key_path, peer_ip, torii_port, quorum, user_default_role);
+    sendSampleTransaction(account_name,
+                          key_path,
+                          peer_ip,
+                          torii_port,
+                          quorum,
+                          "domainsamplev1",
+                          user_default_role,
+                          "assetnamesamplev1");
+    sendSampleBatchTransaction(account_name,
+                               key_path,
+                               peer_ip,
+                               torii_port,
+                               quorum,
+                               user_default_role);
     return EXIT_SUCCESS;
 }
 

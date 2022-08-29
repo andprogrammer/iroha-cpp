@@ -49,7 +49,7 @@ GrpcClient::Response<iroha::protocol::QueryResponse> GrpcClient::send(const iroh
     GrpcClient::Response<iroha::protocol::QueryResponse> response;
     iroha::model::converters::PbQueryFactory pb_factory(pb_qry_factory_log_);
     iroha::protocol::QueryResponse query_response;
-    response.status = query_client_.Find(query, query_response);    // TODO check
+    response.status = query_client_.Find(query, query_response);
     response.answer = query_response;
     return response;
 }

@@ -20,11 +20,6 @@ void Query::populateQueryMetaData(iroha::protocol::Query& pb_query)
     meta->set_created_time(local_time_);
     meta->set_creator_account_id(creator_);
     meta->set_query_counter(counter_);
-
-    // Set signatures - chyba tego juz nie robie poniewaz mam to w signAndAddSignature()
-    // auto sig = pb_query.mutable_signature();
-    // sig->set_signature(query->signature.signature.to_hexstring());    // TODO
-    // sig->set_public_key(query->signature.pubkey.to_hexstring());  // TODO
 }
 
 Query& Query::getAccount(const std::string& account_id)
@@ -34,7 +29,7 @@ Query& Query::getAccount(const std::string& account_id)
     populateQueryMetaData(pb_query);
 
     auto pb_query_mut = pl->mutable_get_account();
-    pb_query_mut->set_account_id(account_id);   // TODO sprawdzic czy ok
+    pb_query_mut->set_account_id(account_id);
 
     queryProto = pb_query;
     return *this;
@@ -89,7 +84,7 @@ Query& Query::getAccountAssetTransactions(const std::string& account_id, const s
     return *this;
 }
 
-Query& Query::getTransactions(const std::vector<std::string>& tx_hashes)    // TODO poprawic powinno byc vector<blob_t32>()
+Query& Query::getTransactions(const std::vector<std::string>& tx_hashes)
 {
     iroha::protocol::Query pb_query;
     populateQueryMetaData(pb_query);
@@ -100,7 +95,7 @@ Query& Query::getTransactions(const std::vector<std::string>& tx_hashes)    // T
                   [&pb_query_mut](auto tx_hash)
     {
         auto adder = pb_query_mut->add_tx_hashes();
-        //        *adder = tx_hash.to_hexstring();    // TODO string do hexstring() ...
+        //        *adder = tx_hash.to_hexstring();    // TODO string do hexstring()
     });
 
     queryProto = pb_query;
@@ -164,17 +159,5 @@ iroha::protocol::Query& Query::signAndAddSignature()
     sig->set_public_key(keypair_.pubkey.to_hexstring());
     return queryProto;
 }
-
-//bool Query::send()
-//{
-//    GrpcClient client(getServerIp(), getServerPort(), pb_qry_factory_log_);
-//    GrpcResponseHandler{response_handler_log_manager_}.handle(client.sendQuery(queryProto));
-
-//    // alternative implementation
-//    //    GrpcResponseHandler response_handler(response_handler_log_manager_);
-//    //    response_handler.handle(GrpcClient(getServerIp(), getServerPort(), pb_qry_factory_log_).sendQuery(queryProto));
-
-//    return true;
-//}
 
 }
