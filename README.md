@@ -29,7 +29,7 @@ mkdir build && cd build && cmake .. && make
 #### Transaction
 
 ```c++
-    IROHA_CPP::Tx tx(account_name, keypair);
+    iroha_lib::Tx tx(account_name, keypair);
 
     const auto tx_proto = tx.createDomain(domain_id, user_default_role)
             .createAsset(asset_name, domain_id, 0)
@@ -38,14 +38,14 @@ mkdir build && cd build && cmake .. && make
     GrpcResponseHandler response_handler(response_handler_log_manager);
     response_handler.handle(GrpcClient(peer_ip, torii_port, pb_qry_factory_log).sendTx(tx_proto));
 
-    IROHA_CPP::Status status(tx_hash, pb_qry_factory_log);
+    iroha_lib::Status status(tx_hash, pb_qry_factory_log);
     const auto statusResponse = status.getTxStatus(peer_ip, torii_port);
     std::cout << "Tx status=" << statusResponse << std::endl;
 ```
 
 #### Transaction Batch
 ```c++
-    IROHA_CPP::Tx tx_a(account_name, keypair);
+    iroha_lib::Tx tx_a(account_name, keypair);
 
     const auto tx_proto = tx_a.createDomain(domain_id, user_default_role)
             .createAsset(asset_name, domain_id, 0)
@@ -54,7 +54,7 @@ mkdir build && cd build && cmake .. && make
     GrpcResponseHandler response_handler(response_handler_log_manager);
     response_handler.handle(GrpcClient(peer_ip, torii_port, pb_qry_factory_log).sendTx(tx_proto));
 
-    IROHA_CPP::Tx tx_b(account_name, keypair);
+    iroha_lib::Tx tx_b(account_name, keypair);
 
     const auto tx_proto = tx_b.createDomain(domain_id, user_default_role)
             .createAsset(asset_name, domain_id, 0)
@@ -63,7 +63,7 @@ mkdir build && cd build && cmake .. && make
     GrpcResponseHandler response_handler(response_handler_log_manager);
     response_handler.handle(GrpcClient(peer_ip, torii_port, pb_qry_factory_log).sendTx(tx_proto));
 
-    IROHA_CPP::TxBatch tx_batch;
+    iroha_lib::TxBatch tx_batch;
     tx_batch.addTransaction(tx_a);
     tx_batch.addTransaction(tx_b);
 

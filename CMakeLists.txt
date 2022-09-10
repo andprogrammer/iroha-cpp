@@ -1,36 +1,41 @@
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
 
-add_subdirectory(services)
+add_subdirectory(model)
 
-add_library(grpcclient
+add_library(grpc_client
     GrpcClient.cpp
-    QueryResponseHandler.cpp
-    TransactionResponseHandler.cpp
-    GrpcResponseHandler.cpp
     GrpcClient.hpp
-    QueryResponseHandler.hpp
-    TransactionResponseHandler.hpp
-    GrpcResponseHandler.hpp
 )
 
-target_link_libraries(grpcclient
+target_link_libraries(grpc_client
     grpc_channel_factory
     model_generators
     command_client
     query_client
 )
 
-target_include_directories(grpcclient PUBLIC
-    ${PROJECT_SOURCE_DIR}/iroha-cpp
+target_include_directories(grpc_client PUBLIC
+    ${PROJECT_SOURCE_DIR}/iroha-lib
 )
 
-add_executable(iroha-cpp
-    main.cpp
+add_executable(tx_example
+    TxExample.cpp
 )
 
-target_link_libraries(iroha-cpp
-    clientservices
+target_link_libraries(tx_example
+    iroha_lib_model
     logger_manager
 )
 
-add_install_step_for_bin(iroha-cpp)
+add_install_step_for_bin(tx_example)
+
+add_executable(batch_example
+    BatchExample.cpp
+)
+
+target_link_libraries(batch_example
+    iroha_lib_model
+    logger_manager
+)
+
+add_install_step_for_bin(batch_example)

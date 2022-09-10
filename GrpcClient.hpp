@@ -1,37 +1,25 @@
 #ifndef GRPC_CLIENT_HPP
 #define GRPC_CLIENT_HPP
 
-#include <string>
-
-#include "logger/logger_fwd.hpp"
-#include "torii/command_client.hpp"
-#include "torii/query_client.hpp"
+#include <endpoint.grpc.pb.h>
+#include <grpc++/grpc++.h>
 
 
-namespace IROHA_CPP
+namespace iroha_lib
 {
 
 class GrpcClient
 {
-    torii::CommandSyncClient command_client_;
-    torii_utils::QuerySyncClient query_client_;
-    logger::LoggerPtr pb_qry_factory_log_;
-
 public:
-    template <typename T>
-    struct Response
-    {
-        grpc::Status status;
-        T answer;
-    };
+    GrpcClient(const std::string& target_ip, const uint16_t port);
+    grpc::Status send(const iroha::protocol::Transaction& tx);
+    grpc::Status send(const iroha::protocol::TxList& tx_list);
+    iroha::protocol::QueryResponse send(const iroha::protocol::Query& query);
+    iroha::protocol::ToriiResponse getTxStatus(const std::string& tx_hash);
 
-    enum TxStatus { OK };
-
-    GrpcClient(std::string target_ip, int port, logger::LoggerPtr pb_qry_factory_log);
-    GrpcClient::Response<GrpcClient::TxStatus> send(const iroha::protocol::Transaction& tx);
-    GrpcClient::Response<GrpcClient::TxStatus> send(const iroha::protocol::TxList& tx_list);
-    GrpcClient::Response<iroha::protocol::QueryResponse> send(const iroha::protocol::Query& query);
-    GrpcClient::Response<iroha::protocol::ToriiResponse> getTxStatus(const std::string& tx_hash);
+private:
+    std::shared_ptr<iroha::protocol::CommandService_v1::StubInterface> commandStub;
+    std::shared_ptr<iroha::protocol::QueryService_v1::StubInterface> queryStub;
 };
 
 }
