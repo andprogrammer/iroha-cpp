@@ -7,14 +7,39 @@
 #include <endpoint.pb.h>
 
 
-namespace iroha_lib
-{
+namespace iroha_lib {
 
-class TxBatch
-{
+using namespace iroha::protocol;
+using iroha::protocol::Transaction_Payload_BatchMeta_BatchType;
+
+class TxBatch {
+
 public:
-    iroha::protocol::Transaction::Payload::BatchMeta::BatchType getBatchType(bool atomic) const;
-    iroha::protocol::TxList batch(std::vector<iroha::protocol::Transaction>& transactions, bool atomic = true);
+    Transaction_Payload_BatchMeta_BatchType getBatchType(bool atomic) const
+    {
+        return atomic ? Transaction_Payload_BatchMeta_BatchType_ATOMIC
+                      : Transaction_Payload_BatchMeta_BatchType_ORDERED;
+    }
+
+    TxList batch(std::vector<Transaction>& transactions, bool atomic = true)
+    {
+        TxList tx_list;
+
+        if (atomic) {
+            Transaction::Payload::BatchMeta meta;
+            meta.set_type(getBatchType(atomic));
+
+            for (auto& tx: transactions) {
+                tx.payload().batch().New()->CopyFrom(meta);
+                *tx_list.add_transactions() = tx;
+            }
+        } else {
+            for (const auto& tx: transactions) {
+                *tx_list.add_transactions() = tx;
+            }
+        }
+        return tx_list;
+    }
 };
 
 }

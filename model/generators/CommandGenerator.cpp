@@ -2,260 +2,280 @@
 #include "model/converters/json_transaction_factory.hpp"
 
 
-namespace iroha_lib
-{
+namespace iroha_lib {
 
-std::shared_ptr<iroha::protocol::Command> CommandGenerator::generateAddAssetQuantity(const std::string &asset_id,
-                                                                                     const std::string &amount)
+std::shared_ptr<Command> CommandGenerator::generateAddAssetQuantity(
+        const std::string& asset_id,
+        const std::string& amount)
 {
-    iroha::protocol::AddAssetQuantity addAssetQuantity;
+    AddAssetQuantity addAssetQuantity;
     addAssetQuantity.set_asset_id(asset_id);
     addAssetQuantity.set_amount(amount);
 
-    auto cmd = iroha::protocol::Command();
-    cmd.set_allocated_add_asset_quantity(new iroha::protocol::AddAssetQuantity(addAssetQuantity));
-    return generateCommand<iroha::protocol::Command>(cmd);
+    auto cmd = Command();
+    cmd.set_allocated_add_asset_quantity(new AddAssetQuantity(addAssetQuantity));
+    return generateCommand<Command>(cmd);
 }
 
-std::shared_ptr<iroha::protocol::Command> CommandGenerator::generateAddPeer(const std::string& address,
-                                                                            const std::string& pubkey,
-                                                                            const std::optional<std::string>& tls_certificate,
-                                                                            bool syncing_peer)
+std::shared_ptr<Command> CommandGenerator::generateAddPeer(
+        const std::string& address,
+        const std::string& pubkey,
+        const std::optional<std::string>& tls_certificate,
+        bool syncing_peer)
 {
-    iroha::protocol::AddPeer pb_add_peer;
+    AddPeer pb_add_peer;
     auto peer = pb_add_peer.mutable_peer();
 
-    iroha::protocol::Peer res;
-    res.set_address(address);
-    res.set_peer_key(iroha::hexstringToArray<iroha::pubkey_t::size()>(pubkey).value().to_hexstring());
+    Peer primitive_peer;
+    primitive_peer.set_address(address);
+    primitive_peer.set_peer_key(
+                iroha::hexstringToArray<iroha::pubkey_t::size()>(pubkey)
+                .value()
+                .to_hexstring());
 
-    if (tls_certificate.has_value())
-        res.set_tls_certificate(*std::move(tls_certificate));
-    res.set_syncing_peer(syncing_peer);
+    if (tls_certificate.has_value()) {
+        primitive_peer.set_tls_certificate(*std::move(tls_certificate));
+    }
+    primitive_peer.set_syncing_peer(syncing_peer);
 
-    peer->CopyFrom(res);
+    peer->CopyFrom(primitive_peer);
 
-    auto cmd = iroha::protocol::Command();
-    cmd.set_allocated_add_peer(new iroha::protocol::AddPeer(pb_add_peer));
-    return generateCommand<iroha::protocol::Command>(cmd);
+    auto cmd = Command();
+    cmd.set_allocated_add_peer(new AddPeer(pb_add_peer));
+    return generateCommand<Command>(cmd);
 }
 
-std::shared_ptr<iroha::protocol::Command> CommandGenerator::generateAddSignatory(const std::string& account_id,
-                                                                                 const std::string& pubkey)
+std::shared_ptr<Command> CommandGenerator::generateAddSignatory(
+        const std::string& account_id,
+        const std::string& pubkey)
 {
-    iroha::protocol::AddSignatory pb_add_signatory;
+    AddSignatory pb_add_signatory;
     pb_add_signatory.set_account_id(account_id);
-    pb_add_signatory.set_public_key(iroha::hexstringToArray<iroha::pubkey_t::size()>(pubkey).value().to_hexstring());
-    // pb_add_signatory.set_public_key(std::move(pubkey)); // alternatywa-ok?
+    pb_add_signatory.set_public_key(
+                iroha::hexstringToArray<iroha::pubkey_t::size()>(pubkey)
+                .value()
+                .to_hexstring());
 
-    auto cmd = iroha::protocol::Command();
-    cmd.set_allocated_add_signatory(new iroha::protocol::AddSignatory(pb_add_signatory));
-    return generateCommand<iroha::protocol::Command>(cmd);
+    auto cmd = Command();
+    cmd.set_allocated_add_signatory(new AddSignatory(pb_add_signatory));
+    return generateCommand<Command>(cmd);
 }
 
-std::shared_ptr<iroha::protocol::Command> CommandGenerator::generateAppendRole(const std::string& account_id,
-                                                                               const std::string& role_name)
+std::shared_ptr<Command> CommandGenerator::generateAppendRole(
+        const std::string& account_id,
+        const std::string& role_name)
 {
-    iroha::protocol::AppendRole append_role;
+    AppendRole append_role;
     append_role.set_account_id(account_id);
     append_role.set_role_name(role_name);
 
-    auto cmd = iroha::protocol::Command();
-    cmd.set_allocated_append_role(new iroha::protocol::AppendRole(append_role));
-    return generateCommand<iroha::protocol::Command>(cmd);
+    auto cmd = Command();
+    cmd.set_allocated_append_role(new AppendRole(append_role));
+    return generateCommand<Command>(cmd);
 }
 
-std::shared_ptr<iroha::protocol::Command> CommandGenerator::generateCreateAccount(const std::string& account_name,
-                                                                                  const std::string& domain_id,
-                                                                                  const std::string& pubkey)
+std::shared_ptr<Command> CommandGenerator::generateCreateAccount(
+        const std::string& account_name,
+        const std::string& domain_id,
+        const std::string& pubkey)
 {
-    iroha::protocol::CreateAccount pb_create_account;
+    CreateAccount pb_create_account;
     pb_create_account.set_account_name(account_name);
     pb_create_account.set_domain_id(domain_id);
     pb_create_account.set_public_key(iroha::hexstringToArray<iroha::pubkey_t::size()>(pubkey).value().to_hexstring());
-    // pb_create_account.set_public_key(pubkey); // alternatywa-ok?
 
-    auto cmd = iroha::protocol::Command();
-    cmd.set_allocated_create_account(new iroha::protocol::CreateAccount(pb_create_account));
-    return generateCommand<iroha::protocol::Command>(cmd);
+    auto cmd = Command();
+    cmd.set_allocated_create_account(new CreateAccount(pb_create_account));
+    return generateCommand<Command>(cmd);
 }
 
-std::shared_ptr<iroha::protocol::Command> CommandGenerator::generateCreateAsset(const std::string &asset_name,
-                                                                                const std::string &domain_id,
-                                                                                uint8_t precision)
+std::shared_ptr<Command> CommandGenerator::generateCreateAsset(
+        const std::string& asset_name,
+        const std::string& domain_id,
+        uint8_t precision)
 {
 
-    iroha::protocol::CreateAsset pb_create_asset;
+    CreateAsset pb_create_asset;
     pb_create_asset.set_asset_name(asset_name);
     pb_create_asset.set_domain_id(domain_id);
     pb_create_asset.set_precision(precision);
 
-    auto cmd = iroha::protocol::Command();
-    cmd.set_allocated_create_asset(new iroha::protocol::CreateAsset(pb_create_asset));
-    return generateCommand<iroha::protocol::Command>(cmd);
+    auto cmd = Command();
+    cmd.set_allocated_create_asset(new CreateAsset(pb_create_asset));
+    return generateCommand<Command>(cmd);
 }
 
-std::shared_ptr<iroha::protocol::Command> CommandGenerator::generateCreateDomain(const std::string &domain_id,
-                                                                                 const std::string &default_role)
+std::shared_ptr<Command> CommandGenerator::generateCreateDomain(
+        const std::string& domain_id,
+        const std::string& default_role)
 {
-
-    iroha::protocol::CreateDomain pb_create_domain;
+    CreateDomain pb_create_domain;
     pb_create_domain.set_domain_id(domain_id);
     pb_create_domain.set_default_role(default_role);
 
-    auto cmdCreateDomain = iroha::protocol::Command();
-    cmdCreateDomain.set_allocated_create_domain(new iroha::protocol::CreateDomain(pb_create_domain));
-    return generateCommand<iroha::protocol::Command>(cmdCreateDomain);
+    auto cmdCreateDomain = Command();
+    cmdCreateDomain.set_allocated_create_domain(new CreateDomain(pb_create_domain));
+    return generateCommand<Command>(cmdCreateDomain);
 }
 
-std::shared_ptr<iroha::protocol::Command> CommandGenerator::generateCreateRole(const std::string& roleName,
-                                                                               const std::unordered_set<iroha::protocol::RolePermission>& permissions)
+std::shared_ptr<Command> CommandGenerator::generateCreateRole(
+        const std::string& role_name,
+        const std::unordered_set<RolePermission>& permissions)
 {
-    iroha::protocol::CreateRole createRole;
-    createRole.set_role_name(roleName);
+    CreateRole createRole;
+    createRole.set_role_name(role_name);
     std::for_each(permissions.begin(),
                   permissions.end(),
-                  [&createRole](auto permission)
-    {
+                  [&createRole](auto permission) {
         createRole.add_permissions(permission);
     });
 
-    auto cmd = iroha::protocol::Command();
-    cmd.set_allocated_create_role(new iroha::protocol::CreateRole(createRole));
-    return generateCommand<iroha::protocol::Command>(cmd);
+    auto cmd = Command();
+    cmd.set_allocated_create_role(new CreateRole(createRole));
+    return generateCommand<Command>(cmd);
 }
 
-std::shared_ptr<iroha::protocol::Command> CommandGenerator::generateDetachRole(const std::string& account_id,
-                                                                               const std::string& role_name)
+std::shared_ptr<Command> CommandGenerator::generateDetachRole(
+        const std::string& account_id,
+        const std::string& role_name)
 {
-    iroha::protocol::DetachRole detach_role;
+    DetachRole detach_role;
     detach_role.set_account_id(account_id);
     detach_role.set_role_name(role_name);
 
-    auto cmd = iroha::protocol::Command();
-    cmd.set_allocated_detach_role(new iroha::protocol::DetachRole(detach_role));
-    return generateCommand<iroha::protocol::Command>(cmd);
+    auto cmd = Command();
+    cmd.set_allocated_detach_role(new DetachRole(detach_role));
+    return generateCommand<Command>(cmd);
 }
 
-std::shared_ptr<iroha::protocol::Command> CommandGenerator::generateGrantPermission(const std::string& account_id,
-                                                                                    const iroha::protocol::GrantablePermission permission)
+std::shared_ptr<Command> CommandGenerator::generateGrantPermission(
+        const std::string& account_id,
+        const GrantablePermission permission)
 {
-    iroha::protocol::GrantPermission grantPermission;
+    GrantPermission grantPermission;
     grantPermission.set_account_id(account_id);
     grantPermission.set_permission(permission);
 
-    auto cmd = iroha::protocol::Command();
-    cmd.set_allocated_grant_permission(new iroha::protocol::GrantPermission(grantPermission));
-    return generateCommand<iroha::protocol::Command>(cmd);
+    auto cmd = Command();
+    cmd.set_allocated_grant_permission(new GrantPermission(grantPermission));
+    return generateCommand<Command>(cmd);
 }
 
-std::shared_ptr<iroha::protocol::Command> CommandGenerator::generateRemovePeer(const std::string& pubkey)
+std::shared_ptr<Command> CommandGenerator::generateRemovePeer(const std::string& pubkey)
 {
-    iroha::protocol::RemovePeer removePeer;
+    RemovePeer removePeer;
     removePeer.set_public_key(pubkey);
 
-    auto cmd = iroha::protocol::Command();
-    cmd.set_allocated_remove_peer(new iroha::protocol::RemovePeer(removePeer));
-    return generateCommand<iroha::protocol::Command>(cmd);
+    auto cmd = Command();
+    cmd.set_allocated_remove_peer(new RemovePeer(removePeer));
+    return generateCommand<Command>(cmd);
 }
 
-std::shared_ptr<iroha::protocol::Command> CommandGenerator::generateRemoveSignatory(const std::string& account_id, const std::string& pubkey)
+std::shared_ptr<Command> CommandGenerator::generateRemoveSignatory(
+        const std::string& account_id,
+        const std::string& pubkey)
 {
-    iroha::protocol::RemoveSignatory removeSignatory;
+    RemoveSignatory removeSignatory;
     removeSignatory.set_account_id(account_id);
     removeSignatory.set_public_key(iroha::hexstringToArray<iroha::pubkey_t::size()>(pubkey).value().to_hexstring());
-    // pb_remove_signatory.set_public_key(keypair_.pubkey.to_hexstring()); // alternatywa-ok?
 
-    auto cmd = iroha::protocol::Command();
-    cmd.set_allocated_remove_signatory(new iroha::protocol::RemoveSignatory(removeSignatory));
-    return generateCommand<iroha::protocol::Command>(cmd);
+    auto cmd = Command();
+    cmd.set_allocated_remove_signatory(new RemoveSignatory(removeSignatory));
+    return generateCommand<Command>(cmd);
 
 }
 
-std::shared_ptr<iroha::protocol::Command> CommandGenerator::generateRevokePermission(const std::string& account_id,
-                                                                                     const iroha::protocol::GrantablePermission permission)
+std::shared_ptr<Command> CommandGenerator::generateRevokePermission(
+        const std::string& account_id,
+        const GrantablePermission permission)
 {
-    iroha::protocol::RevokePermission revokdePermission;
+    RevokePermission revokdePermission;
     revokdePermission.set_account_id(account_id);
     revokdePermission.set_permission(permission);
 
-    auto cmd = iroha::protocol::Command();
-    cmd.set_allocated_revoke_permission(new iroha::protocol::RevokePermission(revokdePermission));
-    return generateCommand<iroha::protocol::Command>(cmd);
+    auto cmd = Command();
+    cmd.set_allocated_revoke_permission(new RevokePermission(revokdePermission));
+    return generateCommand<Command>(cmd);
 }
 
-std::shared_ptr<iroha::protocol::Command> CommandGenerator::generateSetAccountDetail(const std::string& account_id,
-                                                                                     const std::string& key,
-                                                                                     const std::string& value)
+std::shared_ptr<Command> CommandGenerator::generateSetAccountDetail(
+        const std::string& account_id,
+        const std::string& key,
+        const std::string& value)
 {
-    iroha::protocol::SetAccountDetail accountDetails;
+    SetAccountDetail accountDetails;
     accountDetails.set_account_id(account_id);
     accountDetails.set_key(key);
     accountDetails.set_value(value);
 
-    auto cmd = iroha::protocol::Command();
-    cmd.set_allocated_set_account_detail(new iroha::protocol::SetAccountDetail(accountDetails));
-    return generateCommand<iroha::protocol::Command>(cmd);
+    auto cmd = Command();
+    cmd.set_allocated_set_account_detail(new SetAccountDetail(accountDetails));
+    return generateCommand<Command>(cmd);
 }
 
-std::shared_ptr<iroha::protocol::Command> CommandGenerator::generateSetAccountQuorum(const std::string& account_id, uint32_t quorum)
+std::shared_ptr<Command> CommandGenerator::generateSetAccountQuorum(
+        const std::string& account_id, uint32_t quorum)
 {
-    iroha::protocol::SetAccountQuorum setAccountQuorum;
+    SetAccountQuorum setAccountQuorum;
     setAccountQuorum.set_account_id(account_id);
     setAccountQuorum.set_quorum(quorum);
 
-    auto cmd = iroha::protocol::Command();
-    cmd.set_allocated_set_account_quorum(new iroha::protocol::SetAccountQuorum(setAccountQuorum));
-    return generateCommand<iroha::protocol::Command>(cmd);
+    auto cmd = Command();
+    cmd.set_allocated_set_account_quorum(new SetAccountQuorum(setAccountQuorum));
+    return generateCommand<Command>(cmd);
 }
 
-std::shared_ptr<iroha::protocol::Command> CommandGenerator::generateSubtractAssetQuantity(const std::string& asset_id,
-                                                                                          const std::string& amount)
+std::shared_ptr<Command> CommandGenerator::generateSubtractAssetQuantity(
+        const std::string& asset_id,
+        const std::string& amount)
 {
-    iroha::protocol::SubtractAssetQuantity subtractAssetQuantity;
+    SubtractAssetQuantity subtractAssetQuantity;
     subtractAssetQuantity.set_asset_id(asset_id);
     subtractAssetQuantity.set_amount(amount);
 
-    auto cmd = iroha::protocol::Command();
-    cmd.set_allocated_subtract_asset_quantity(new iroha::protocol::SubtractAssetQuantity(subtractAssetQuantity));
-    return generateCommand<iroha::protocol::Command>(cmd);
+    auto cmd = Command();
+    cmd.set_allocated_subtract_asset_quantity(new SubtractAssetQuantity(subtractAssetQuantity));
+    return generateCommand<Command>(cmd);
 }
 
-std::shared_ptr<iroha::protocol::Command> CommandGenerator::generateTransferAsset(const std::string& account_id,
-                                                                                  const std::string& dest_account_id,
-                                                                                  const std::string& asset_id,
-                                                                                  const std::string& description,
-                                                                                  const std::string& amount)
+std::shared_ptr<Command> CommandGenerator::generateTransferAsset(
+        const std::string& account_id,
+        const std::string& dest_account_id,
+        const std::string& asset_id,
+        const std::string& description,
+        const std::string& amount)
 {
-    iroha::protocol::TransferAsset transferAsset;
+    TransferAsset transferAsset;
     transferAsset.set_src_account_id(account_id);
     transferAsset.set_dest_account_id(dest_account_id);
     transferAsset.set_asset_id(asset_id);
     transferAsset.set_description(description);
     transferAsset.set_amount(amount);
 
-    auto cmd = iroha::protocol::Command();
-    cmd.set_allocated_transfer_asset(new iroha::protocol::TransferAsset(transferAsset));
-    return generateCommand<iroha::protocol::Command>(cmd);
+    auto cmd = Command();
+    cmd.set_allocated_transfer_asset(new TransferAsset(transferAsset));
+    return generateCommand<Command>(cmd);
 }
 
-std::shared_ptr<iroha::protocol::Command> CommandGenerator::generateCompareAndSetAccountDetail(const std::string& account_id,
-                                                                                               const std::string& key,
-                                                                                               const std::string& value,
-                                                                                               const std::optional<std::string>& old_value,
-                                                                                               bool check_empty)
+std::shared_ptr<Command> CommandGenerator::generateCompareAndSetAccountDetail(
+        const std::string& account_id,
+        const std::string& key,
+        const std::string& value,
+        const std::optional<std::string>& old_value,
+        bool check_empty)
 {
-    iroha::protocol::CompareAndSetAccountDetail compareAndSetAccountDetail;
+    CompareAndSetAccountDetail compareAndSetAccountDetail;
     compareAndSetAccountDetail.set_account_id(account_id);
     compareAndSetAccountDetail.set_key(key);
     compareAndSetAccountDetail.set_value(value);
-    if (old_value.has_value())
+    if (old_value.has_value()) {
         compareAndSetAccountDetail.set_old_value(*std::move(old_value));
+    }
     compareAndSetAccountDetail.set_check_empty(check_empty);
 
-    auto cmd = iroha::protocol::Command();
-    cmd.set_allocated_compare_and_set_account_detail(new iroha::protocol::CompareAndSetAccountDetail(compareAndSetAccountDetail));
-    return generateCommand<iroha::protocol::Command>(cmd);
+    auto cmd = Command();
+    cmd.set_allocated_compare_and_set_account_detail(new CompareAndSetAccountDetail(compareAndSetAccountDetail));
+    return generateCommand<Command>(cmd);
 }
 
 }

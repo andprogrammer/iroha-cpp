@@ -1,14 +1,13 @@
 add_library(iroha_lib_model
-    Query.cpp
-    Tx.cpp
-    TxBatch.cpp
     Query.hpp
+    Query.cpp
     Tx.hpp
+    Tx.cpp
     TxBatch.hpp
-    generators/CommandGenerator.cpp
     generators/CommandGenerator.hpp
-    generators/QueryGenerator.cpp
+    generators/CommandGenerator.cpp
     generators/QueryGenerator.hpp
+    generators/QueryGenerator.cpp
     utils/Utils.h
     utils/Utils.cpp
     LibsAndClassDeclarations.h

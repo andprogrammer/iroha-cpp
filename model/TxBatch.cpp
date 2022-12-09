@@ -1,38 +1,35 @@
 #include "TxBatch.hpp"
 
 #include "model/converters/pb_common.hpp"
+#include "transaction.pb.h"
+#include "primitive.pb.h"
 
 
-namespace iroha_lib
+namespace iroha_lib {
+
+using namespace iroha::protocol;
+using iroha::protocol::Transaction_Payload_BatchMeta_BatchType;
+
+Transaction_Payload_BatchMeta_BatchType TxBatch::getBatchType(bool atomic) const
 {
-
-iroha::protocol::Transaction::Payload::BatchMeta::BatchType TxBatch::getBatchType(bool atomic) const
-{
-    const auto atomicBatchType = iroha::protocol::Transaction::Payload::BatchMeta::BatchType::Transaction_Payload_BatchMeta_BatchType_ATOMIC;
-    const auto orderedBatchType = iroha::protocol::Transaction::Payload::BatchMeta::BatchType::Transaction_Payload_BatchMeta_BatchType_ORDERED;
-    return atomic ? atomicBatchType
-                  : orderedBatchType;
+    return atomic ? Transaction_Payload_BatchMeta_BatchType_ATOMIC
+                  : Transaction_Payload_BatchMeta_BatchType_ORDERED;
 }
 
-iroha::protocol::TxList TxBatch::batch(std::vector<iroha::protocol::Transaction>& transactions, bool atomic)
+TxList TxBatch::batch(std::vector<Transaction>& transactions, bool atomic)
 {
-    iroha::protocol::TxList tx_list;
+    TxList tx_list;
 
-    if (atomic)
-    {
-        iroha::protocol::Transaction::Payload::BatchMeta meta;
+    if (atomic) {
+        Transaction::Payload::BatchMeta meta;
         meta.set_type(getBatchType(atomic));
 
-        for (auto& tx: transactions)
-        {
+        for (auto& tx: transactions) {
             tx.payload().batch().New()->CopyFrom(meta);
             *tx_list.add_transactions() = tx;
         }
-    }
-    else
-    {
-        for (const auto& tx: transactions)
-        {
+    } else {
+        for (const auto& tx: transactions) {
             *tx_list.add_transactions() = tx;
         }
     }
